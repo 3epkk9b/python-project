@@ -1,0 +1,155 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+
+
+<div class="row filter-row">
+  <div class="col-md-6">
+    <div class="gender-filter">
+      <input type="radio" name="gender" id="all-gender" value="all" checked>
+      <label for="all-gender">All</label>
+      <input type="radio" name="gender" id="male-gender" value="male">
+      <label for="male-gender">Male</label>
+      <input type="radio" name="gender" id="female-gender" value="female">
+      <label for="female-gender">Female</label>
+    </div>
+  </div>
+  <div class="col-md-6 text-md-end">
+    <div class="group-filter">
+      <label for="group-select">Group:</label>
+      <select name="group" id="group-select">
+        <option value="all">All</option>
+        {% for group in groups %}
+        <option value="{{ group }}">{{ group }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+</div>
+
+<p>Count: <span id="student-count">{{ students|length }}</span></p>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Phone</th>
+      <th>Group</th>
+      <th>Gender</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="student-table-body">
+    {% for student in students %}
+    <tr class="student-row">
+      <td>{{ student.id }}</td>
+      <td>{{ student.name }}</td>
+      <td>{{ student.email }}</td>
+      <td>{{ student.phone }}</td>
+      <td>{{ student.group }}</td>
+      <td>{{ student.gender }}</td>
+      <td>
+        <div class="action-box">
+          <a href="{{ url_for('main.update_student', student_id=student.id) }}" class="action-link">Update</a>
+          <a href="{{ url_for('main.delete_student', student_id=student.id) }}" class="action-link delete-btn" onclick="return confirmDelete()">Delete</a>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+  function confirmDelete() {
+    return confirm('Are you sure you want to delete this student?');
+  }
+
+  const genderFilter = document.querySelectorAll('input[name="gender"]');
+  const groupSelect = document.getElementById('group-select');
+  const studentCount = document.getElementById('student-count');
+  const studentRows = document.querySelectorAll('.student-row');
+
+  genderFilter.forEach((filter) => {
+    filter.addEventListener('change', () => {
+      applyFilters();
+    });
+  });
+
+  groupSelect.addEventListener('change', () => {
+    applyFilters();
+  });
+
+  function applyFilters() {
+    const selectedGender = document.querySelector('input[name="gender"]:checked').value;
+    const selectedGroup = groupSelect.value;
+    let count = 0;
+
+    studentRows.forEach((row) => {
+      const rowGender = row.querySelector('td:nth-child(6)').textContent.toLowerCase();
+      const rowGroup = row.querySelector('td:nth-child(5)').textContent;
+
+      if (
+        (selectedGender === 'all' || rowGender === selectedGender || selectedGender === '') &&
+        (selectedGroup === 'all' || rowGroup === selectedGroup)
+      ) {
+        row.style.display = '';
+        count++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    studentCount.textContent = count;
+  }
+</script>
+
+<style>
+  .action-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 120px;
+  }
+
+  .action-link {
+    display: inline-block;
+    padding: 5px 10px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 3px;
+  }
+
+  /* Remove hover effect for action links */
+  .action-link:hover {
+    background-color: transparent;
+  }
+
+  .gender-filter,
+  .group-filter {
+    margin-bottom: 5px;
+  }
+
+  .filter-row {
+    margin-bottom: 20px;
+  }
+
+  .text-md-end {
+    text-align: right;
+  }
+
+  /* Adjust the group filter position */
+  .group-filter label {
+    margin-left: 10px;
+  }
+
+  @media (max-width: 575.98px) {
+    .text-md-end {
+      text-align: right;
+    }
+  }
+</style>
+
+{% endblock %}
